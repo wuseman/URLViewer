@@ -95,7 +95,7 @@ var htmlContent = `
       </table>
       
       <div class="footer">
-        <p>&copy; 2023 - All rights reserved, wuseman</p>
+        <p>&copy; 2023 - 2025 - All rights reserved, wuseman</p>
       </div>
     </body>
   </html>
