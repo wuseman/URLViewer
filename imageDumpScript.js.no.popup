@@ -1,0 +1,99 @@
+// imageDumpScript.js - Deep Scan Version för Aftonbladet & tunga sajter
+
+(function() {
+  const newTab = window.open('about:blank', '_blank');
+  if (!newTab) {
+    alert("Popup blockerades! Tillåt popups för att se bilderna.");
+    return;
+  }
+
+  newTab.document.write("<html><body style='background:#111217;color:gray;text-align:center;font-family:sans-serif;padding-top:50px;'><h1>Deep scanning for images...</h1><p>Please wait, scrolling to trigger lazy-load.</p></body></html>");
+
+  function scrollToBottom(callback) {
+    let scrollCount = 0;
+    const maxScrolls = 25; // Ökat rejält för långa nyhetssajter
+    const distance = 800; 
+    const interval = 200; // Ger sajten tid att rendera bilderna
+
+    const intervalId = setInterval(() => {
+      window.scrollBy(0, distance);
+      scrollCount++;
+
+      // Uppdatera status i den nya tabben
+      if (scrollCount % 5 === 0) {
+        newTab.document.body.innerHTML = `<h1>Scanning... (${Math.round((scrollCount/maxScrolls)*100)}%)</h1>`;
+      }
+
+      if (scrollCount >= maxScrolls) {
+        clearInterval(intervalId);
+        // Scrolla upp lite igen för att säkerställa att allt "fastnat"
+        window.scrollTo(0, 0);
+        setTimeout(callback, 500); 
+      }
+    }, interval);
+  }
+
+  function collectAndDisplayImages() {
+    const images = document.querySelectorAll('img');
+    const rawUrls = Array.from(images)
+      .map(img => img.currentSrc || img.src) // currentSrc är bättre för responsiva bilder
+      .filter(src => {
+        return src && 
+               src.startsWith('http') && 
+               !src.includes('pixel') && // Skippa tracking-pixlar
+               !src.includes('doubleclick');
+      });
+
+    const uniqueImageUrls = [...new Set(rawUrls)];
+    const domain = window.location.hostname;
+    
+    const htmlContent = `
+      <html>
+        <head>
+          <title>Deep Image Dump - ${domain}</title>
+          <style>
+            body { background-color: #111217; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+            .header { text-align: center; padding: 20px; border-bottom: 1px solid #554A6F; margin-bottom: 30px; }
+            .header h1 { color: #AF87D7; margin: 0; }
+            .collage { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+            .img-card { 
+              background-color: #1A1B23; 
+              border: 1px solid #554A6F; 
+              height: 200px; 
+              display: flex; 
+              align-items: center; 
+              justify-content: center; 
+              overflow: hidden;
+              transition: 0.2s;
+            }
+            .img-card:hover { border-color: #AF87D7; transform: scale(1.02); z-index: 10; }
+            .img-card img { max-width: 100%; max-height: 100%; object-fit: cover; cursor: pointer; }
+            .footer { margin-top: 50px; text-align: center; color: gray; font-size: 11px; border-top: 1px solid #554A6F; padding: 20px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>${domain}</h1>
+            <p>Deep Scan: ${uniqueImageUrls.length} unique images found</p>
+          </div>
+          <div class="collage">
+            ${uniqueImageUrls.map(url => `
+              <div class="img-card">
+                <a href="${url}" target="_blank">
+                  <img src="${url}" loading="lazy">
+                </a>
+              </div>
+            `).join('')}
+          </div>
+          <div class="footer"><p>&copy; 2023 - 2026 - wuseman</p></div>
+        </body>
+      </html>
+    `;
+
+    newTab.document.open();
+    newTab.document.write(htmlContent);
+    newTab.document.close();
+  }
+
+  scrollToBottom(collectAndDisplayImages);
+})();

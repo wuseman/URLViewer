@@ -1,4 +1,4 @@
-// imageDumpScript.js - Deep Scan v1.1.0 (Fixed & Optimized)
+// imageDumpScript.js - Deep Scan v1.1.0 med Progress Tracker
 (function() {
   const newTab = window.open('about:blank', '_blank');
   if (!newTab) {
@@ -6,6 +6,7 @@
     return;
   }
 
+  // CSS för laddningsskärmen
   const loadingHtml = `
     <html>
       <body style="background:#111217; color:#AF87D7; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; margin:0; font-family:sans-serif;">
@@ -29,12 +30,15 @@
       window.scrollBy(0, distance);
       scrollCount++;
       
+      // Uppdatera framsteg i den nya tabben
       const percentage = Math.round((scrollCount / maxScrolls) * 100);
       const bar = newTab.document.getElementById('progress-bar');
+      const statusText = newTab.document.getElementById('status');
       const percentText = newTab.document.getElementById('percent');
       
       if (bar) bar.style.width = percentage + '%';
       if (percentText) percentText.innerText = percentage + '%';
+      if (statusText) statusText.innerText = "Scanning " + window.location.hostname + "...Hold on.";
 
       if (scrollCount >= maxScrolls) {
         clearInterval(intervalId);
@@ -60,17 +64,10 @@
           <title>Image Collage - ${domain}</title>
           <style>
             body { background-color: #111217; color: white; font-family: sans-serif; margin: 0; padding: 20px; }
-            .header { text-align: center; padding: 20px; border-bottom: 1px solid #554A6F; margin-bottom: 20px; }
+            .header { text-align: center; padding: 20px; border-bottom: 1px solid #554A6F; margin-bottom: 30px; }
             .header h1 { color: #AF87D7; margin: 0; }
-            
-            .action-bar { text-align: center; margin-bottom: 30px; }
-            .wget-btn { 
-              background: #554A6F; color: white; border: none; padding: 10px 20px; 
-              cursor: pointer; border-radius: 4px; font-weight: bold; transition: 0.2s;
-            }
-            .wget-btn:hover { background: #AF87D7; }
-
             .collage { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+            
             .img-card { 
               background-color: #1A1B23; border: 1px solid #554A6F; height: 200px; 
               display: flex; align-items: center; justify-content: center; 
@@ -85,6 +82,8 @@
               justify-content: center; align-items: center; cursor: zoom-out;
             }
             #overlay img { max-width: 95%; max-height: 95%; border: 1px solid #554A6F; box-shadow: 0 0 50px #000; }
+            
+            .footer { margin-top: 50px; text-align: center; color: gray; font-size: 11px; border-top: 1px solid #554A6F; padding: 20px; }
           </style>
         </head>
         <body>
@@ -94,7 +93,7 @@
 
           <div class="header">
             <h1>${domain}</h1>
-            <p>${uniqueImageUrls.length} images found</p>
+            <p>${uniqueImageUrls.length} unique images - Click to focus</p>
           </div>
 
           <div class="collage">
@@ -105,6 +104,16 @@
             `).join('')}
           </div>
 
+          <div class="footer"><p>&copy; 2026 - wuseman</p></div>
+
+          <script>
+            document.addEventListener('keydown', e => {
+              if (e.key === 'Escape') {
+                document.getElementById('overlay').style.display = 'none';
+                document.body.style.overflow = 'auto';
+              }
+            });
+          </script>
         </body>
       </html>
     `;

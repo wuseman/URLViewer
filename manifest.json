@@ -1,7 +1,7 @@
 {
   "update_url": "https://clients2.google.com/service/update2/crx",
   "name": "URL Viewer",
-  "version": "1.0",
+  "version": "1.1.0",
   "description": "Dump all URLs from a page.",
   "manifest_version": 3,
   "permissions": ["activeTab", "scripting"],
